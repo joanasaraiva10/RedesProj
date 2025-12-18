@@ -67,7 +67,6 @@ static void setup_signals()
 
 int main(int argc, char **argv)
 {
-    std::cout << "Chupa me a pila\n";
     ServerConfig cfg{};
     parse_server_args(cfg, argc, argv);
     g_verbose = cfg.verbose;
