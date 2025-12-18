@@ -1,0 +1,21 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 26 - Concurrency tests - download
+%
+show 001
+RCOMP blackseagrain.png
+show 002
+RCOMP Emergency_Medicine.png
+show 003
+RCOMP GRC_2026.png
+show 004
+RCOMP IENE_2026.png
+show 005
+RCOMP Apollo11_Launch.jpg
+show 006
+RCOMP Trafalgar_Battle.jpg
+show 007
+RCOMP SMTP_commands.txt
+exit

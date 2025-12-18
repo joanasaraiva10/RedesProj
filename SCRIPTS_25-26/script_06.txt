@@ -1,0 +1,12 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 06 - TCP Communications - create event with medium description file
+%
+login 123456 babababa
+%
+create GRC2026 GRC_2026.png 17-08-2026 10:00 500
+%
+logout
+exit

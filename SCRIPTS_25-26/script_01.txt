@@ -1,0 +1,17 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 01 - tests for 1st login, registering and password check
+%
+% First login (and registering):
+login 111111 abababab
+logout
+%
+% Second login with wrong password:
+login 111111 babababa
+%
+% Third login with correct password (previous registration):
+login 111111 abababab
+logout
+exit

@@ -1,0 +1,17 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 04 - Change password
+%
+% login with correct password:
+login 111111 abababab
+% change password:
+changePass abababab babababa
+%
+logout
+%
+login 111111 abababab
+login 111111 babababa
+logout
+exit

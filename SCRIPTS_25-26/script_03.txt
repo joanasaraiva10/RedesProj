@@ -1,0 +1,23 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025 2026
+%
+% Script 03 - tests for login of many users
+%
+% login (already registered):
+login 111111 abababab
+logout
+%
+% login 123456 with wrong password:
+login 123456 abababab 
+%
+% login with correct password (previous registration):
+login 123456 babababa
+logout
+% login new user
+login 121212 abcabcab
+logout
+% login new user
+login 212121 cbacbaca
+logout
+exit

@@ -1,0 +1,16 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 25 - Concurrency tests
+%
+login 111111 aaaaaaaa
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create EmergMedic Emergency_Medicine.png 27-04-2026 09:30 200
+create GRC2026 GRC_2026.png 17-08-2026 10:00 500
+create IENE2026 IENE_2026.png 21-09-2026 10:30 400
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+create Trafalgar Trafalgar_Battle.jpg 21-10-1805 11:45 999
+create RClesson SMTP_commands.txt 01-12-2026 12:00 40
+logout
+exit

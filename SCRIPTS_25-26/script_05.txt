@@ -1,0 +1,12 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 05 - TCP Communications - create event with small description file
+%
+login 111111 babababa
+%
+create RClesson SMTP_commands.txt 01-01-2026 12:00 40
+%
+logout
+exit

@@ -1,0 +1,16 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 08 - TCP Communications - show events 001, 002 and 003
+%
+show 001
+RCOMP SMTP_commands.txt
+%
+show 002
+RCOMP GRC_2026.png
+%
+show 003
+RCOMP Apollo11_Launch.jpg
+%
+exit

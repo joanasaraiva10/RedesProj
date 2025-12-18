@@ -1,0 +1,14 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025 2026
+%
+% Script 02 - 1st login (and register), unregister and 2nd login (new register)
+%
+% First login and register:
+login 123456 abababab
+% unregister:
+unregister
+% Second login, new register:
+login 123456 babababa
+logout
+exit

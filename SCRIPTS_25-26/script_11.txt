@@ -1,0 +1,73 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 11 - event reservations
+%
+% Test reservations adding up - check by list
+%
+login 111111 abcdefgh
+% Not complete
+myreservations
+reserve 001 50
+myreservations
+reserve 001 25
+myreservations
+logout
+%
+list
+%
+login 222222 hgfedcba
+% Not complete
+myreservations
+reserve 002 25
+myreservations
+reserve 002 50
+myreservations
+logout
+%
+list
+%
+login 333333 abcdabcd
+% Sold out:
+myreservations
+reserve 003 100
+myreservations
+logout
+%
+list
+%
+login 444444 dcbaabcd
+myreservations
+reserve 004 50
+myreservations
+% To be rejected:
+reserve 004 51
+myreservations
+list
+% Sold out:
+reserve 004 50
+myreservations
+logout
+%
+list
+%
+show 001
+%
+show 002
+%
+show 003
+%
+show 004
+%
+login 123456 babababa
+%
+close 003
+close 004
+close 007
+%
+myevents
+logout
+%
+list
+exit

@@ -1,0 +1,12 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 07 - TCP Communications - create event with large description file
+%
+login 121212 abcabcab
+%
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+%
+logout
+exit

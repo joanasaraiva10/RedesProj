@@ -1,0 +1,18 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 22 - Concurrency test - upload
+login 222222 bbbbbbbb
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+create BlackSeaGr blackseagrain.png 22-04-2026 09:00 500
+create Apollo11 Apollo11_Launch.jpg 16-07-1969 09:32 900
+logout
+exit

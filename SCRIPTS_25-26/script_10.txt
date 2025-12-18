@@ -1,0 +1,53 @@
+%-------------------------------------------------------------------------------
+%
+% RC 2025-2026
+%
+% Script 10 - event reservations
+%
+login 111111 abcdefgh
+logout
+login 222222 hgfedcba
+logout
+login 333333 abcdabcd
+logout
+login 444444 dcbaabcd
+logout
+%
+login 111111 abcdefgh
+myreservations
+reserve 001 100
+myreservations
+logout
+%
+login 222222 hgfedcba
+myreservations
+reserve 002 100
+myreservations
+logout
+%
+login 333333 abcdabcd
+myreservations
+reserve 003 100
+myreservations
+logout
+%
+login 444444 dcbaabcd
+myreservations
+reserve 004 100
+myreservations
+logout
+%
+list
+%
+show 001
+%
+show 002
+%
+show 003
+%
+show 004
+%
+login 123456 babababa
+myevents
+logout
+exit
