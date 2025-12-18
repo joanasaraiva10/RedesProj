@@ -170,7 +170,7 @@ static void handle_CRE(int fd, Reader &rd) {
         return;
     }
 
-    // ✅ CRÍTICO: tem de haver UM espaço entre Fsize e os bytes
+    //tem de haver UM espaço entre Fsize e os bytes
     char sep = 0;
     if (!rd.getch(sep) || sep != ' ') {
         const std::string resp = "RCE ERR\n";
