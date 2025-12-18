@@ -1,24 +1,12 @@
-# ======================
-# Compiler & flags
-# ======================
 CXX      = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 
-# ======================
-# Directories
-# ======================
 SERVER_DIR = server
 USER_DIR   = user
 
-# ======================
-# Executables
-# ======================
-SERVER = $/ES
-USER   = $/USER
+SERVER_BIN = ES
+USER_BIN   = User
 
-# ======================
-# Source files
-# ======================
 SERVER_SRC = \
 	$(SERVER_DIR)/main.cpp \
 	$(SERVER_DIR)/events.cpp \
@@ -41,49 +29,24 @@ USER_SRC = \
 	$(USER_DIR)/udp_handler.cpp \
 	$(USER_DIR)/file_utils.cpp
 
-# ======================
-# Object files
-# ======================
 SERVER_OBJ = $(SERVER_SRC:.cpp=.o)
 USER_OBJ   = $(USER_SRC:.cpp=.o)
 
-# ======================
-# Default target
-# ======================
 all: $(SERVER_BIN) $(USER_BIN)
 
-# ======================
-# Build server
-# ======================
-$(SERVER_BIN): $(SERVER_OBJ) | $(BIN_DIR)
+$(SERVER_BIN): $(SERVER_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-# ======================
-# Build user
-# ======================
-$(USER_BIN): $(USER_OBJ) | $(BIN_DIR)
+$(USER_BIN): $(USER_OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-# ======================
-# Create bin directory
-# ======================
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-# ======================
-# Pattern rule
-# ======================
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# ======================
-# Convenience targets
-# ======================
 server: $(SERVER_BIN)
-
 user: $(USER_BIN)
 
 clean:
-	rm -rf $(SERVER_OBJ) $(USER_OBJ) $(BIN_DIR)
+	rm -f $(SERVER_BIN) $(USER_BIN) $(SERVER_OBJ) $(USER_OBJ)
 
 .PHONY: all clean server user
