@@ -9,12 +9,13 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 # ======================
 SERVER_DIR = server
 USER_DIR   = user
+BIN_DIR    = bin
 
 # ======================
-# Executables (na raiz)
+# Executables
 # ======================
-SERVER_BIN = ES
-USER_BIN   = USER
+SERVER_BIN = $(BIN_DIR)/ES
+USER_BIN   = $(BIN_DIR)/USER
 
 # ======================
 # Source files
@@ -55,14 +56,20 @@ all: $(SERVER_BIN) $(USER_BIN)
 # ======================
 # Build server
 # ======================
-$(SERVER_BIN): $(SERVER_OBJ)
+$(SERVER_BIN): $(SERVER_OBJ) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # ======================
 # Build user
 # ======================
-$(USER_BIN): $(USER_OBJ)
+$(USER_BIN): $(USER_OBJ) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $^ -o $@
+
+# ======================
+# Create bin directory
+# ======================
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 # ======================
 # Pattern rule
@@ -74,9 +81,10 @@ $(USER_BIN): $(USER_OBJ)
 # Convenience targets
 # ======================
 server: $(SERVER_BIN)
+
 user: $(USER_BIN)
 
 clean:
-	rm -f $(SERVER_OBJ) $(USER_OBJ) $(SERVER_BIN) $(USER_BIN)
+	rm -rf $(SERVER_OBJ) $(USER_OBJ) $(BIN_DIR)
 
 .PHONY: all clean server user

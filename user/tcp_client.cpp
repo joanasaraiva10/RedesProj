@@ -52,16 +52,13 @@ int tcp_send_all(int fd, const void *buf, size_t len)
     while (nleft > 0) {
         ssize_t n = ::write(fd, ptr, nleft);
         if (n < 0) {
-            if (errno == EINTR) continue; // retry
-            return -1;
+            return -1; // erro
         }
-        if (n == 0) return -1;
         ptr   += n;
-        nleft -= static_cast<size_t>(n);
+        nleft -= n;
     }
-    return 0;
+    return 0; // sucesso
 }
-
 
 // lê até '\n' (ou EOF), devolve std::string
 std::string tcp_recv_line(int fd)

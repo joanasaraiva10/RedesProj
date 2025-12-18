@@ -1,14 +1,8 @@
 #include <iostream>
 #include "user.h"
 #include "parser.h"
-#include <signal.h>
 
-
-int main(int argc, char **argv)
-{
-    // evita crash quando o servidor fecha a socket (EPIPE)
-    signal(SIGPIPE, SIG_IGN);
-
+int main(int argc, char **argv) {
     ClientNetConfig cfg{};
     ClientState state;         // uid/pass começam vazios, logged_in = false
 
