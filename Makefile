@@ -9,13 +9,12 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 # ======================
 SERVER_DIR = server
 USER_DIR   = user
-BIN_DIR    = bin
 
 # ======================
 # Executables
 # ======================
-SERVER_BIN = $(BIN_DIR)/ES
-USER_BIN   = $(BIN_DIR)/USER
+SERVER = $/ES
+USER   = $/USER
 
 # ======================
 # Source files
