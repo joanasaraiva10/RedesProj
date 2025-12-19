@@ -685,7 +685,9 @@ static void handle_show(ClientState *,
         fd = -1;
 
         // Guardar ficheiro localmente com nome Fname
-        std::ofstream fout(fname, std::ios::binary);
+        std::string outpath = std::string("../") + fname;
+        std::ofstream fout(outpath, std::ios::binary);
+
         if (!fout.is_open()) {
             std::cerr << "Could not create local file \"" << fname << "\".\n";
             return;
