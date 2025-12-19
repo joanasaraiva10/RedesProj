@@ -12,9 +12,8 @@
 #include <ctime>
 #include <string>
 
-// ------------------------------------------------------------
+
 // helpers read/write exact
-// ------------------------------------------------------------
 static bool read_exact_fd(int fd, void *buf, std::size_t n) {
     std::size_t done = 0;
     char *p = static_cast<char*>(buf);
@@ -37,9 +36,8 @@ static bool write_exact_fd(int fd, const void *buf, std::size_t n) {
     return true;
 }
 
-// ------------------------------------------------------------
+
 // Reader com 1-byte pushback (socket-safe)
-// ------------------------------------------------------------
 struct Reader {
     int fd;
     bool has_pb = false;
@@ -88,10 +86,8 @@ struct Reader {
     bool expect_newline() { return expect_char('\n'); }
 };
 
-// ------------------------------------------------------------
-// Handlers
-// ------------------------------------------------------------
 
+// Handlers
 static void handle_LST(int fd, Reader &rd) {
     // LST\n
     if (!rd.expect_newline()) {
@@ -466,24 +462,24 @@ static void handle_CPS(int fd, Reader &rd) {
 void tcp_handle_connection(int fd) {
     Reader rd(fd);
 
-    std::string tag;
-    if (!rd.read_token(tag)) {
-        const std::string resp = "ERR\n";
-        write_exact_fd(fd, resp.data(), resp.size());
-        ::close(fd);
-        return;
+    while(true){
+        std::string tag;
+        if (!rd.read_token(tag)) {
+            const std::string resp = "ERR\n";
+            write_exact_fd(fd, resp.data(), resp.size());
+            ::close(fd);
+            return;
+        }
+        if (tag == "LST") handle_LST(fd, rd);
+        else if (tag == "CRE") handle_CRE(fd, rd);
+        else if (tag == "RID") handle_RID(fd, rd);
+        else if (tag == "CLS") handle_CLS(fd, rd);
+        else if (tag == "SED") handle_SED(fd, rd);
+        else if (tag == "CPS") handle_CPS(fd, rd);
+        else {
+            const std::string resp = "ERR\n";
+            write_exact_fd(fd, resp.data(), resp.size());
+        }
     }
-
-    if (tag == "LST") handle_LST(fd, rd);
-    else if (tag == "CRE") handle_CRE(fd, rd);
-    else if (tag == "RID") handle_RID(fd, rd);
-    else if (tag == "CLS") handle_CLS(fd, rd);
-    else if (tag == "SED") handle_SED(fd, rd);
-    else if (tag == "CPS") handle_CPS(fd, rd);
-    else {
-        const std::string resp = "ERR\n";
-        write_exact_fd(fd, resp.data(), resp.size());
-    }
-
     ::close(fd);
 }
