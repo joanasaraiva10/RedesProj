@@ -201,9 +201,6 @@ static EventState compute_state(const std::string &eid,
 
 bool ensure_end_if_past(const std::string &eid, const std::string &event_date_str)
 {
-    // LOCK global: evita 2 processos escreverem END ao mesmo tempo
-    EventsFsLock lock;
-    if (!lock.ok()) return false;
 
     const std::string end_path = event_dir(eid) + "/END " + eid + ".txt";
 
@@ -373,10 +370,7 @@ bool es_create_event(const std::string &uid,
                      const std::string &file_data,
                      std::string &eid_out)
 {
-    // LOCK global: com fork, isto é essencial para evitar colisões
     // em USERS/<uid>/CREATED e noutras escritas relacionadas.
-    EventsFsLock lock;
-    if (!lock.ok()) return false;
 
     std::error_code ec;
 
