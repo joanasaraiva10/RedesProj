@@ -67,7 +67,6 @@ int udp_create_socket(std::uint16_t port)
     int opt = 1;
     if (::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         std::perror("udp_create_socket: setsockopt");
-        // NOTA: Não é fatal, continuamos.
     }
 
     if (::bind(fd, res->ai_addr, res->ai_addrlen) < 0) {

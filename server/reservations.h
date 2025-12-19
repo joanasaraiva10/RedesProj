@@ -13,7 +13,7 @@ enum class ReserveStatus {
     NOK    // Erro genérico ou evento inexistente
 };
 
-// Escreve explicitamente no servidor quanto foi reservado.
+// Escreve no servidor quanto foi reservado.
 // people_requested é o nº pedido pelo user.
 // remaining_out devolve o nº de lugares restantes (caso REJ).
 ReserveStatus es_make_reservation(const std::string &uid,

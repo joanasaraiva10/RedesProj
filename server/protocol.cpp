@@ -35,7 +35,7 @@ bool proto_valid_event_name(const std::string &name)
     return true;
 }
 
-// Fname: 1..24, [A-Za-z0-9._-], extensão .xxx
+
 bool proto_valid_fname(const std::string &fname)
 {
     if (fname.empty() || fname.size() > FNAME_MAX) return false;

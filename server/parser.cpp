@@ -8,7 +8,7 @@ void parse_server_args(ServerConfig &cfg, int argc, char **argv)
 {
     // defaults
     cfg.verbose = false;
-    cfg.port    = 58000;   // aqui podes somar o nº do grupo, se quiseres
+    cfg.port    = 58000 + GN;  
 
     int opt;
     while ((opt = ::getopt(argc, argv, "vp:")) != -1) {

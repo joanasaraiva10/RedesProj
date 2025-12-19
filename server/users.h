@@ -3,7 +3,7 @@
 
 #include <string>
 
-// Estados genéricos para operações sobre utilizadores.
+// Estados para operações sobre utilizadores.
 // Mapeiam diretamente para as strings do protocolo.
 enum class UserStatus {
     OK,
@@ -19,12 +19,11 @@ enum class UserStatus {
 // Converte UserStatus para a string usada no protocolo ("OK", "REG", etc.)
 std::string user_status_to_string(UserStatus st);
 
-// Helpers de estado simples
+// Helpers 
 bool es_user_exists(const std::string &uid);
 bool es_user_is_logged_in(const std::string &uid);
 
-// Operações principais (seguem o enunciado e o guia):
-
+// Operações principais 
 // LIN UID password  -> RLI status (OK/REG/NOK/ERR)
 UserStatus es_user_login(const std::string &uid,
                          const std::string &password);

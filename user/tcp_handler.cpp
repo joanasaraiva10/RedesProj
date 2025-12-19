@@ -28,11 +28,11 @@ static bool tcp_recv_exact(int fd, void *buf, size_t len)
 }
 
 
-static void handle_list(ClientState * /*state*/,
+static void handle_list(ClientState *,
                         const ClientNetConfig *cfg,
                         const char *line)
 {
-    // 1) opcional: validar que o comando era mesmo "list"
+    // 1: validar que o comando era mesmo "list"
     {
         std::istringstream iss(line);
         std::string cmd;
@@ -89,7 +89,7 @@ static void handle_list(ClientState * /*state*/,
             return;
         }
 
-        // 6) status == OK → ler [EID name state date time] repetidamente
+        // 6) status == OK, ler [EID name state date time] repetidamente
         std::cout << "Event list\n";
 
         std::string eid, name, state_str, date, time;
@@ -131,7 +131,6 @@ static void handle_list(ClientState * /*state*/,
 }
 
 
-
 static void handle_close(ClientState *state,
                          const ClientNetConfig *cfg,
                          const char *line)
@@ -142,7 +141,7 @@ static void handle_close(ClientState *state,
         return;
     }
 
-    // 2) parse da linha do utilizador: "close 003"
+    // 2) parse da linha do utilizador
     std::string cmd, eid;
     {
         std::istringstream iss(line);
@@ -180,7 +179,7 @@ static void handle_close(ClientState *state,
             return;
         }
 
-        // 6) parse da resposta: "RCL status\n"
+        // 6) parse da resposta
         std::istringstream iss(response);
         std::string tag, status;
         iss >> tag >> status;
@@ -242,7 +241,7 @@ static void handle_changepass(ClientState *state,
         return;
     }
 
-    // parse da linha: "changepw old new" ou "changePass old new"
+    // parse da linha
     std::string cmd, oldpw, newpw;
     {
         std::istringstream iss(line);
@@ -331,7 +330,7 @@ static void handle_reserve(ClientState *state,
         return;
     }
 
-    // 2) parse da linha do utilizador: "reserve 002 10"
+    // 2) parse da linha do utilizador
     std::string cmd, eid, seats_str;
     {
         std::istringstream iss(line);
@@ -343,7 +342,6 @@ static void handle_reserve(ClientState *state,
         return;
     }
 
-    // opcional: validar que seats é número > 0
     int seats = 0;
     try {
         seats = std::stoi(seats_str);
@@ -496,7 +494,7 @@ static void handle_create(ClientState *state,
         return;
     }
 
-    if (sz > 10'000'000) { // 10 MB limite do enunciado
+    if (sz > 10'000'000) { // 10 MB limite 
         std::cerr << "File is too large (max 10 MB).\n";
         return;
     }
@@ -590,7 +588,7 @@ static void handle_create(ClientState *state,
 }
 
 
-static void handle_show(ClientState * /*state*/,
+static void handle_show(ClientState *,
                         const ClientNetConfig *cfg,
                         const char *line)
 {
@@ -618,7 +616,7 @@ static void handle_show(ClientState * /*state*/,
             return;
         }
 
-        // Ler linha de cabeçalho: "RSE status ...\n"
+        // Ler linha de cabeçalho
         std::string header = tcp_recv_line(fd);
         if (header.empty()) {
             std::cerr << "Empty response to SED.\n";
@@ -637,7 +635,6 @@ static void handle_show(ClientState * /*state*/,
         }
 
         if (status != "OK") {
-            // Enunciado só define NOK/ERR além de OK
             if (status == "NOK") {
                 std::cout << "Event " << eid << " does not exist or has no description file.\n";
             } else if (status == "ERR") {
@@ -649,7 +646,7 @@ static void handle_show(ClientState * /*state*/,
             return;
         }
 
-        // status == OK → ler o resto dos campos do header
+        // status == OK, ler o resto dos campos do header
         std::string owner_uid, name, date, time, fname;
         int attendance = 0;
         int reserved   = 0;
@@ -713,8 +710,6 @@ static void handle_show(ClientState * /*state*/,
         std::cout << "  File saved: ./" << fname
                   << " (" << fsize << " bytes)\n";
 
-        // Informação extra: sold-out / possivelmente fechado
-        // event_state: 0=Past, 1=Open, 2=SoldOut, 3=ClosedByUser
         if (event_state == 3) {
             std::cout << "  Status    : CLOSED by owner (no longer accepting reservations).\n";
         } else if (reserved >= attendance) {
@@ -747,9 +742,9 @@ void tcp_dispatch_command(ClientState *state,
     } else if (cmd == "changepw" || cmd == "changePass") {
         handle_changepass(state, cfg, line);
     } else if (cmd == "create") {
-        handle_create(state, cfg, line);   // <<< novo
+        handle_create(state, cfg, line);  
     } else if (cmd == "show") {
-        handle_show(state, cfg, line);     // <<< novo
+        handle_show(state, cfg, line);    
     } else {
         std::cerr << "Unknown TCP command: " << cmd << "\n";
     }

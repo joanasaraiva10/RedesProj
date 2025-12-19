@@ -5,7 +5,7 @@
 
 
 
-// Dispatcher UDP: descobre o comando a partir da linha e chama o handler certo
+// Dispatcher UDP
 void udp_dispatch_command(ClientState *state,
                           const ClientNetConfig *cfg,
                           const char *line);

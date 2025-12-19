@@ -5,6 +5,7 @@
 #include "reservations.h"
 #include "protocol.h"
 
+#include <iostream>
 #include <unistd.h>
 #include <cstring>
 #include <sstream>
@@ -37,7 +38,7 @@ static bool write_exact_fd(int fd, const void *buf, std::size_t n) {
 }
 
 
-// Reader com 1-byte pushback (socket-safe)
+// Reader com 1-byte pushback 
 struct Reader {
     int fd;
     bool has_pb = false;
@@ -53,7 +54,7 @@ struct Reader {
 
     void ungetch(char c) { has_pb = true; pb = c; }
 
-    // lê token até ' ' ou '\n' (não consome o delimitador)
+    // lê token até ' ' ou '\n'
     bool read_token(std::string &tok) {
         tok.clear();
         char c;
@@ -87,8 +88,25 @@ struct Reader {
 };
 
 
+static void tcp_verbose(bool verbose,
+                        const char *ip,
+                        uint16_t port,
+                        const char *cmd,
+                        const std::string &uid)
+{
+    if (!verbose) return;
+    std::cout << "[ES][TCP] " << cmd
+              << " UID=" << uid
+              << " from " << ip << ":" << port
+              << "\n";
+}
+
+
 // Handlers
-static void handle_LST(int fd, Reader &rd) {
+static void handle_LST(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
+
+    tcp_verbose(verbose, ip, port, "LST", "------");
+
     // LST\n
     if (!rd.expect_newline()) {
         const std::string resp = "RLS ERR\n";
@@ -117,8 +135,8 @@ static void handle_LST(int fd, Reader &rd) {
     write_exact_fd(fd, resp.data(), resp.size());
 }
 
-static void handle_CRE(int fd, Reader &rd) {
-    // CRE UID PASS NAME dd-mm-yyyy hh:mm ATT Fname Fsize␠Fdata\n
+static void handle_CRE(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
+    // CRE UID PASS NAME dd-mm-yyyy hh:mm ATT Fname Fsize Fdata\n
 
     std::string uid, pass, name, date_part, time_part, att_s, fname, fsize_s;
 
@@ -134,6 +152,9 @@ static void handle_CRE(int fd, Reader &rd) {
         write_exact_fd(fd, resp.data(), resp.size());
         return;
     }
+
+    // verbose por request (sem password)
+    tcp_verbose(verbose, ip, port, "CRE", proto_valid_uid(uid) ? uid : "------");
 
     int attendance = 0;
     long long fsize_ll = -1;
@@ -229,7 +250,7 @@ static void handle_CRE(int fd, Reader &rd) {
     write_exact_fd(fd, resp.data(), resp.size());
 }
 
-static void handle_RID(int fd, Reader &rd) {
+static void handle_RID(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
     // RID UID PASS EID people\n
     std::string uid, pass, eid, ppl_s;
 
@@ -242,6 +263,9 @@ static void handle_RID(int fd, Reader &rd) {
         write_exact_fd(fd, resp.data(), resp.size());
         return;
     }
+
+    tcp_verbose(verbose, ip, port, "RID", proto_valid_uid(uid) ? uid : "------");
+
 
     int people = 0;
     try { people = std::stoi(ppl_s); } catch (...) { people = 0; }
@@ -270,7 +294,7 @@ static void handle_RID(int fd, Reader &rd) {
     write_exact_fd(fd, resp.data(), resp.size());
 }
 
-static void handle_CLS(int fd, Reader &rd) {
+static void handle_CLS(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
     // CLS UID PASS EID\n
     std::string uid, pass, eid;
 
@@ -282,6 +306,9 @@ static void handle_CLS(int fd, Reader &rd) {
         write_exact_fd(fd, resp.data(), resp.size());
         return;
     }
+
+    tcp_verbose(verbose, ip, port, "CLS", proto_valid_uid(uid) ? uid : "------");
+
 
     if (!proto_valid_uid(uid) || !proto_valid_password(pass) || !proto_valid_eid(eid)) {
         const std::string resp = "RCL ERR\n";
@@ -371,8 +398,11 @@ static void handle_CLS(int fd, Reader &rd) {
     write_exact_fd(fd, resp.data(), resp.size());
 }
 
-static void handle_SED(int fd, Reader &rd) {
-    // SED EID\n -> RSE OK ... Fsize␠Fdata\n
+static void handle_SED(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
+
+     tcp_verbose(verbose, ip, port, "SED", "------");
+
+    // SED EID\n -> RSE OK ... Fsize Fdata\n
     std::string eid;
 
     if (!rd.expect_space() || !rd.read_token(eid) || !rd.expect_newline()) {
@@ -432,7 +462,7 @@ static void handle_SED(int fd, Reader &rd) {
     write_exact_fd(fd, &nl, 1);
 }
 
-static void handle_CPS(int fd, Reader &rd) {
+static void handle_CPS(int fd, Reader &rd, bool verbose, const char *ip, uint16_t port) {
     // CPS UID old new\n
     std::string uid, oldp, newp;
 
@@ -444,6 +474,8 @@ static void handle_CPS(int fd, Reader &rd) {
         write_exact_fd(fd, resp.data(), resp.size());
         return;
     }
+
+    tcp_verbose(verbose, ip, port, "CPS", proto_valid_uid(uid) ? uid : "------");
 
     if (!proto_valid_uid(uid) || !proto_valid_password(oldp) || !proto_valid_password(newp)) {
         const std::string resp = "RCP ERR\n";
@@ -457,22 +489,25 @@ static void handle_CPS(int fd, Reader &rd) {
 }
 
 
-void tcp_handle_connection(int fd) {
+void tcp_handle_connection(int fd, bool verbose, const char *ip, uint16_t port)
+{
     Reader rd(fd);
 
     std::string tag;
-    if (!rd.read_token(tag)) { ::close(fd); return;}
+    if (!rd.read_token(tag)) { ::close(fd); return; }
 
-    if (tag == "LST") handle_LST(fd, rd);
-    else if (tag == "CRE") handle_CRE(fd, rd);
-    else if (tag == "RID") handle_RID(fd, rd);
-    else if (tag == "CLS") handle_CLS(fd, rd);
-    else if (tag == "SED") handle_SED(fd, rd);
-    else if (tag == "CPS") handle_CPS(fd, rd);
+    if (tag == "LST") handle_LST(fd, rd, verbose, ip, port);
+    else if (tag == "CRE") handle_CRE(fd, rd, verbose, ip, port);
+    else if (tag == "RID") handle_RID(fd, rd, verbose, ip, port);
+    else if (tag == "CLS") handle_CLS(fd, rd, verbose, ip, port);
+    else if (tag == "SED") handle_SED(fd, rd, verbose, ip, port);
+    else if (tag == "CPS") handle_CPS(fd, rd, verbose, ip, port);
     else {
+        if (verbose) tcp_verbose(verbose, ip, port, tag.c_str(), "------");
         const std::string resp = "ERR\n";
         write_exact_fd(fd, resp.data(), resp.size());
     }
 
     ::close(fd);
 }
+

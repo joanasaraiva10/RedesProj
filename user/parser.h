@@ -4,9 +4,10 @@
 #include <cstddef>   // size_t
 #include "user.h"
 
-/**
- * Tipos de comandos que o utilizador pode escrever.
- */
+#define GN 5
+
+
+// Tipos de comandos que o utilizador pode escrever.
 typedef enum {
     CMD_LOGIN,
     CMD_LOGOUT,
@@ -22,9 +23,8 @@ typedef enum {
     CMD_INVALID
 } UserCommandType;
 
-/**
- * Tipo de protocolo a usar para cada comando.
- */
+
+//Tipo de protocolo a usar para cada comando.
 typedef enum {
     PROTO_UDP,
     PROTO_TCP,
@@ -32,40 +32,23 @@ typedef enum {
     PROTO_INVALID
 } ProtocolKind;
 
-/**
- * Mapeia a primeira palavra do input para um UserCommandType.
- * Ex: "login" -> CMD_LOGIN
- */
+
+//Mapeia a primeira palavra do input para um UserCommandType.
 UserCommandType command_from_word(const char *word);
 
-/**
- * Dado um comando (CMD_LOGIN, CMD_LIST,...),
- * devolve o protocolo adequado.
- */
+//Dado um comando (CMD_LOGIN, CMD_LIST,...),
+//devolve o protocolo adequado.
 ProtocolKind command_protocol(UserCommandType cmd);
 
-/**
- * Faz parse ao comando "login <uid> <password>".
- *
- * Retorna:
- *   0  -> sucesso
- *  -1  -> erro de sintaxe
- */
+//Faz parse ao comando "login <uid> <password>".
 int parse_login_command(const char *line,
                         char *uid_out,  size_t uid_sz,
                         char *pass_out, size_t pass_sz);
 
-/**
- * Lê argumentos da linha de comandos:
- * -n <IP>
- * -p <PORTO>
- */
+// Lê argumentos da linha de comandos:
 void parse_args(ClientNetConfig *cfg, int argc, char **argv);
 
-/**
- * Loop principal do cliente:
- * lê comandos do terminal e despacha para UDP/TCP.
- */
+//lê comandos do terminal e despacha para UDP/TCP.
 void user_loop(ClientState *state, const ClientNetConfig *cfg);
 
 #endif // PARSER_H

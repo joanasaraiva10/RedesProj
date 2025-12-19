@@ -51,7 +51,7 @@ int udp_send_and_receive(const ClientNetConfig *cfg,
             throw std::runtime_error("sendto() failed");
         }
 
-        // Buffer dinâmico para receber – limite máximo do UDP (~64KB)
+        // Buffer para receber com limite máximo do UDP (~64KB)
         std::vector<char> buf(65535);
 
         struct sockaddr_storage src_addr{};

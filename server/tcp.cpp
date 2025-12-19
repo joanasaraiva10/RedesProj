@@ -86,7 +86,10 @@ void tcp_accept_and_fork(int listen_fd, int udp_fd, bool verbose)
         ::close(listen_fd);
         ::close(udp_fd);
 
-        tcp_handle_connection(cfd);  // trata UM comando
+        const char *ip = ::inet_ntoa(cli.sin_addr);
+        uint16_t port  = ntohs(cli.sin_port);
+
+        tcp_handle_connection(cfd, verbose, ip, port); //trata um comando 
 
         std::_Exit(0);
     }

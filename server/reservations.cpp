@@ -16,7 +16,7 @@ static std::string res_file(const std::string &eid) {
     return event_dir(eid) + "/RES " + eid + ".txt";
 }
 
-// Escreve "value\n"
+
 static bool write_int_file(const std::string &path, int value)
 {
     std::ofstream out(path);
@@ -53,9 +53,8 @@ static void make_reservation_names(const std::string &uid,
     datetime_str_out = datetime;
 }
 
-// Se o evento já passou mas ainda não tem END, podes opcionalmente
-// criar END EID.txt com a data/hora de ocorrência (igual à do evento).
-// Isto segue a sugestão do guia 2.1, mas não é estritamente obrigatório.
+// Se o evento já passou mas ainda não tem END então 
+// criamos END EID.txt com a data/hora de ocorrência (igual à do evento).
 static void maybe_create_end_for_past_event(const std::string &eid,
                                             const std::string &event_date_str)
 {
@@ -93,8 +92,6 @@ static void maybe_create_end_for_past_event(const std::string &eid,
 }
 
 
-
-// FUNÇÃO PRINCIPAL
 ReserveStatus es_make_reservation(const std::string &uid,
                                   const std::string &pass,
                                   const std::string &eid,
@@ -103,12 +100,7 @@ ReserveStatus es_make_reservation(const std::string &uid,
 {
     remaining_out = 0;
 
-    // ---------- Validar utilizador ----------
-    // Enunciado RID/RRI:
-    //  - se user não está logged in -> NLG
-    //  - se password incorreta -> WRP
-    // Não fala explicitamente em "user não existe", podemos tratá-lo
-    // também como "não logged in" para não revelar info.
+    //  Validar utilizador 
     if (!es_user_exists(uid)) {
         return ReserveStatus::NLG;
     }
@@ -121,16 +113,15 @@ ReserveStatus es_make_reservation(const std::string &uid,
         return ReserveStatus::WRP;
     }
 
-    // ---------- Carregar evento ----------
+    //  Carregar evento 
     EventInfo ev;
     if (!load_event(eid, ev)) {
         // evento não existe ou START mal formado
         return ReserveStatus::NOK;
     }
 
-    // ---------- Verificar estado ----------
-    // Se o evento já for passado, podemos ainda criar o END se não existir,
-    // para ficar coerente com o guia (mas já devolvemos PST).
+    // Verificar estado
+    // Se o evento já for passado, podemos ainda criar o END se não existir
     if (ev.state == EventState::Past) {
         maybe_create_end_for_past_event(eid, ev.event_date);
         return ReserveStatus::PST;
@@ -145,7 +136,6 @@ ReserveStatus es_make_reservation(const std::string &uid,
     }
 
     // Só continuamos se estiver OPEN
-    // (EventState::Open)
 
     // Disponibilidade 
     int total_capacity = ev.capacity;
@@ -162,7 +152,7 @@ ReserveStatus es_make_reservation(const std::string &uid,
         return ReserveStatus::REJ;
     }
 
-    // ---------- Podem reservar ----------
+    //  Podem reservar
     int new_total = total_reserved + people;
 
     // actualizar RES EID.txt
@@ -190,13 +180,12 @@ ReserveStatus es_make_reservation(const std::string &uid,
         if (!out.is_open())
             return ReserveStatus::NOK;
 
-        // Conteúdo: UID res_num res_datetime
+        //UID res_num res_datetime
         out << uid << " " << people << " " << datetime_str << "\n";
         if (!out.good())
             return ReserveStatus::NOK;
     }
 
-    // Ficheiro USERS/uid/RESERVED/R-uid-date time.txt (cópia)
     {
         std::string path = "USERS/" + uid + "/RESERVED/" + filename;
         std::ofstream out(path);

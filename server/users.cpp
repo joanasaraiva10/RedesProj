@@ -53,7 +53,7 @@ static std::string load_password(const std::string &uid)
     return pass;
 }
 
-// Cria USERS/ se não existir (o guia assume que já existe, mas isto é robusto)
+// Cria USERS/ se não existir 
 static void ensure_users_root()
 {
     std::error_code ec;
@@ -61,9 +61,6 @@ static void ensure_users_root()
         fs::create_directory(USERS_DIR, ec);
     }
 }
-
-
-// API pública auxiliar
 
 
 std::string user_status_to_string(UserStatus st)
@@ -96,12 +93,11 @@ bool es_user_is_logged_in(const std::string &uid)
 }
 
 
-// LIN UID password  -> RLI status
-// Guia + enunciado:
-//  - se UID não existir registado → cria diretoria, pass.txt, login.txt → REG
+// LIN UID password  - RLI 
+//  - se UID não existir registado, cria diretoria, pass.txt, login.txt - REG
 //  - se existir registado:
-//        pass correta → marca login (login.txt) → OK
-//        pass errada → NOK
+//        pass correta, marca login (login.txt) 
+//        pass errada, NOK
 UserStatus es_user_login(const std::string &uid,
                          const std::string &password)
 {
@@ -115,7 +111,7 @@ UserStatus es_user_login(const std::string &uid,
     bool dir_exists   = fs::exists(udir, ec);
     bool pass_exists  = fs::exists(pass_file(uid), ec);
 
-    // Caso 1: diretoria de utilizador não existe → novo registo
+    // 1: diretoria de utilizador não existe: novo registo
     if (!dir_exists) {
         // criar USERS/UID, CREATED, RESERVED
         try {
@@ -139,7 +135,7 @@ UserStatus es_user_login(const std::string &uid,
             out << password << "\n";
         }
 
-        // criar login.txt (conteúdo é irrelevante segundo o guia)
+        // criar login.txt 
         {
             std::ofstream out(login_file(uid));
             if (!out.is_open()) return UserStatus::ERR;
@@ -149,8 +145,8 @@ UserStatus es_user_login(const std::string &uid,
         return UserStatus::REG;
     }
 
-    // Caso 2: diretoria já existe, mas pass.txt não existe
-    // (utilizador já teve conta e fez unregister – herda CREATED/RESERVED)
+    // 2: diretoria já existe, mas pass.txt não existe
+    // (utilizador já teve conta e fez unregister: herda CREATED/RESERVED)
     if (!pass_exists) {
         // criar novo pass.txt
         {
@@ -169,7 +165,7 @@ UserStatus es_user_login(const std::string &uid,
         return UserStatus::REG;
     }
 
-    // Caso 3: utilizador já registado → verificar password
+    //3: utilizador já registado, verifica password
     std::string saved = load_password(uid);
     if (saved.empty()) {
         // erro ao ler pass.txt
@@ -177,11 +173,11 @@ UserStatus es_user_login(const std::string &uid,
     }
 
     if (saved != password) {
-        // password errada → NOK
+        // password errada 
         return UserStatus::NOK;
     }
 
-    // password correta → garantir login.txt (marcar sessão)
+    // password correta: garantir login.txt 
     {
         std::ofstream out(login_file(uid));
         if (!out.is_open()) return UserStatus::ERR;
@@ -234,8 +230,7 @@ UserStatus es_user_logout(const std::string &uid,
 //  - se utilizador não registado → UNR
 //  - se pass errada → WRP
 //  - se registado mas não logged in → NOK
-//  - se registado & logged in & pass ok → apaga só pass.txt e login.txt → OK
-//    (CREATED e RESERVED ficam, como no guia, para herdar info) 
+//  - se registado & logged in & pass ok → apaga só pass.txt e login.txt → OK 
 UserStatus es_user_unregister(const std::string &uid,
                               const std::string &password)
 {
@@ -254,7 +249,7 @@ UserStatus es_user_unregister(const std::string &uid,
         return UserStatus::WRP;
     }
 
-    // tem de estar logged in, senão → NOK
+    // tem de estar logged in, senão NOK
     fs::path lfile = login_file(uid);
     if (!fs::exists(lfile, ec)) {
         return UserStatus::NOK;
@@ -288,11 +283,10 @@ bool es_user_check_password(const std::string &uid,
 
 
 // CPS UID oldPass newPass -> RCP status
-//  Especificação:
 //   - se user não existe → NID
 //   - se não está logged in → NLG
 //   - se oldPass != pass.txt → NOK
-//   - se tudo ok → escreve newPass em pass.txt → OK 
+//   - se tudo ok, escreve newPass em pass.txt → OK 
 UserStatus es_user_change_password(const std::string &uid,
                                    const std::string &old_pass,
                                    const std::string &new_pass)

@@ -10,7 +10,7 @@ int tcp_connect(const ClientNetConfig *cfg);
 // envia todos os 'len' bytes (repetindo write se for preciso)
 int tcp_send_all(int fd, const void *buf, size_t len);
 
-// lê uma linha (até '\n'), devolve como string (dinâmico)
+// lê uma linha (até '\n'), devolve como string 
 std::string tcp_recv_line(int fd);
 
 #endif

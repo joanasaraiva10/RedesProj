@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#define GN 5
+
 struct ServerConfig {
     bool        verbose;
     std::uint16_t port;   // porto ES (TCP+UDP)

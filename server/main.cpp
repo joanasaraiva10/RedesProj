@@ -44,9 +44,7 @@ static void sigint_handler(int)
 static void sigchld_handler(int)
 {
     // limpar processos filho (forks TCP)
-    while (waitpid(-1, nullptr, WNOHANG) > 0) {
-        // nada
-    }
+    while (waitpid(-1, nullptr, WNOHANG) > 0) {}
 }
 
 static void setup_signals()

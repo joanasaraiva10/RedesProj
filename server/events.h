@@ -4,7 +4,7 @@
 #include <vector>
 #include <ctime>
 
-// Estados de evento (iguais aos do enunciado RLS/RME):
+// Estados de evento:
 // 0 – evento no passado
 // 1 – evento no futuro e ainda a aceitar reservas
 // 2 – evento no futuro, mas esgotado (sold out)
@@ -39,10 +39,10 @@ bool load_event(const std::string &eid, EventInfo &out);
 // Lê todos os eventos em EVENTS/, ordenados por EID
 std::vector<EventInfo> load_all_events();
 
-// Parse "dd-mm-yyyy hh:mm" -> struct tm
+// Parse "dd-mm-yyyy hh:mm" - struct tm
 bool parse_event_datetime(const std::string &event_date, struct tm &out_tm);
 
-// Criação de evento (usado pelo comando CRE)
+// Criação de evento 
 bool es_create_event(const std::string &uid,
                      const std::string &name,
                      const std::string &date_part,

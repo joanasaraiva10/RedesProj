@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
     ClientNetConfig cfg{};
     ClientState state;         // uid/pass começam vazios, logged_in = false
 
-    state.logged_in = false;   // redundante mas explícito
+    state.logged_in = false;  
 
     parse_args(&cfg, argc, argv);
     user_loop(&state, &cfg);

@@ -59,8 +59,7 @@ struct ReservationSummary {
     std::time_t ts{};     // para ordenar (timestamp)
 };
 
-// --------------------- LIN ---------------------
-
+//  LIN 
 static void handle_LIN(std::istringstream &iss, std::string &reply)
 {
     std::string uid, pass, extra;
@@ -75,8 +74,7 @@ static void handle_LIN(std::istringstream &iss, std::string &reply)
     reply = "RLI " + status + "\n";
 }
 
-// --------------------- LOU ---------------------
-
+// LOU 
 static void handle_LOU(std::istringstream &iss, std::string &reply)
 {
     std::string uid, pass, extra;
@@ -91,8 +89,7 @@ static void handle_LOU(std::istringstream &iss, std::string &reply)
     reply = "RLO " + status + "\n";
 }
 
-// --------------------- UNR ---------------------
-
+//  UNR 
 static void handle_UNR(std::istringstream &iss, std::string &reply)
 {
     std::string uid, pass, extra;
@@ -107,8 +104,7 @@ static void handle_UNR(std::istringstream &iss, std::string &reply)
     reply = "RUR " + status + "\n";
 }
 
-// --------------------- LME (myevents) ---------------------
-
+//  LME (myevents) 
 static void handle_LME(std::istringstream &iss, std::string &reply)
 {
     std::string uid, pass, extra;
@@ -178,8 +174,7 @@ static void handle_LME(std::istringstream &iss, std::string &reply)
     reply = out.str();
 }
 
-// --------------------- LMR (myreservations) ---------------------
-
+//  LMR (myreservations) 
 static void handle_LMR(std::istringstream &iss, std::string &reply)
 {
     std::string uid, pass, extra;
@@ -295,7 +290,6 @@ static void handle_LMR(std::istringstream &iss, std::string &reply)
     reply = out.str();
 }
 
-// --------------------- função pública ---------------------
 
 void udp_handle_datagram(int udp_fd, bool verbose)
 {
@@ -309,12 +303,20 @@ void udp_handle_datagram(int udp_fd, bool verbose)
     buf[n] = '\0';
 
     if (verbose) {
-        std::cout << "[ES][UDP] From "
-                  << inet_ntoa(peer.addr.sin_addr)
-                  << ":" << ntohs(peer.addr.sin_port)
-                  << " -> \"" << buf << "\"";
-        if (buf[n-1] != '\n') std::cout << "\n";
-    }
+    std::istringstream tmp(buf);  
+    std::string cmd, uid;
+    tmp >> cmd >> uid;
+
+    if (!proto_valid_uid(uid)) uid = "------";
+    if (cmd.empty()) cmd = "???";
+
+    std::cout << "[ES][UDP] " << cmd
+              << " UID=" << uid
+              << " from " << inet_ntoa(peer.addr.sin_addr)
+              << ":" << ntohs(peer.addr.sin_port)
+              << "\n";
+}
+
 
     std::string line(buf, n);
     std::istringstream iss(line);

@@ -7,7 +7,7 @@
 #include <string>
 
 
-//  LOGIN via UDP 
+//  LOGIN 
 static void udp_handle_login(ClientState *state,
                              const ClientNetConfig *cfg,
                              const char *line)
@@ -65,7 +65,7 @@ static void udp_handle_login(ClientState *state,
 }
 
 
-//  LOGOUT via UDP
+//  LOGOUT 
 static void udp_handle_logout(ClientState *state,
                               const ClientNetConfig *cfg,
                               const char *line)
@@ -128,7 +128,7 @@ static void udp_handle_logout(ClientState *state,
 }
 
 
-//  UNREGISTER via UDP
+//  UNREGISTER 
 static void udp_handle_unregister(ClientState *state,
                                   const ClientNetConfig *cfg,
                                   const char *line)
@@ -192,7 +192,7 @@ static void udp_handle_unregister(ClientState *state,
 }
 
 
-//  MYRESERVATIONS via UDP
+//  MYRESERVATIONS 
 static void udp_handle_myreservations(ClientState *state,
                                       const ClientNetConfig *cfg,
                                       const char *line)
@@ -271,7 +271,7 @@ static void udp_handle_myreservations(ClientState *state,
 }
 
 
-//  MYEVENTS via UDP
+//  MYEVENTS 
 static void udp_handle_myevents(ClientState *state,
                                 const ClientNetConfig *cfg,
                                 const char *line)

@@ -7,10 +7,7 @@
 #include "udp_handler.h"
 #include "tcp_handler.h"
 
-/* =====================
- *  Mapear palavra → comando
- * ===================== */
-
+// palavra - comando
 UserCommandType command_from_word(const char *word) {
     if (strcmp(word, "login") == 0)           return CMD_LOGIN;
     if (strcmp(word, "logout") == 0)          return CMD_LOGOUT;
@@ -31,10 +28,8 @@ UserCommandType command_from_word(const char *word) {
     return CMD_INVALID;
 }
 
-/* =====================
- *  Comando → tipo de protocolo
- * ===================== */
 
+// Comando - tipo de protocolo
 ProtocolKind command_protocol(UserCommandType cmd) {
     switch (cmd) {
         /* UDP  */
@@ -60,10 +55,11 @@ ProtocolKind command_protocol(UserCommandType cmd) {
     }
 }
 
+
 void parse_args(ClientNetConfig *cfg, int argc, char **argv) {
     /* valores por omissão */
     strcpy(cfg->server_ip, "127.0.0.1"); // ES na mesma máquina
-    cfg->server_port = 58000;            // aqui podes somar o nº de grupo
+    cfg->server_port = 58000 + GN ;      
 
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-n") && i + 1 < argc) {
@@ -78,9 +74,6 @@ void parse_args(ClientNetConfig *cfg, int argc, char **argv) {
     }
 }
 
-/* =====================
- *  Loop principal do cliente
- * ===================== */
 
 void user_loop(ClientState *state, const ClientNetConfig *cfg)
 {
@@ -127,10 +120,6 @@ void user_loop(ClientState *state, const ClientNetConfig *cfg)
             fprintf(stderr, "Unknown command: %s\n", first);
             continue;
         }
-
-        /* ======================
-         *      SOMENTE UDP
-         * ====================== */
 
         if (proto == PROTO_UDP) {
             udp_dispatch_command(state, cfg, line);
