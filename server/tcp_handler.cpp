@@ -461,7 +461,7 @@ void tcp_handle_connection(int fd) {
     Reader rd(fd);
 
     std::string tag;
-    if (!rd.read_token(tag)) { ::close(fd); return; }
+    if (!rd.read_token(tag)) { ::close(fd); return;}
 
     if (tag == "LST") handle_LST(fd, rd);
     else if (tag == "CRE") handle_CRE(fd, rd);
