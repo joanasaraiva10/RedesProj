@@ -456,30 +456,23 @@ static void handle_CPS(int fd, Reader &rd) {
     write_exact_fd(fd, resp.data(), resp.size());
 }
 
-// ------------------------------------------------------------
-// Entry point
-// ------------------------------------------------------------
+
 void tcp_handle_connection(int fd) {
     Reader rd(fd);
 
-    while(true){
-        std::string tag;
-        if (!rd.read_token(tag)) {
-            const std::string resp = "ERR\n";
-            write_exact_fd(fd, resp.data(), resp.size());
-            ::close(fd);
-            return;
-        }
-        if (tag == "LST") handle_LST(fd, rd);
-        else if (tag == "CRE") handle_CRE(fd, rd);
-        else if (tag == "RID") handle_RID(fd, rd);
-        else if (tag == "CLS") handle_CLS(fd, rd);
-        else if (tag == "SED") handle_SED(fd, rd);
-        else if (tag == "CPS") handle_CPS(fd, rd);
-        else {
-            const std::string resp = "ERR\n";
-            write_exact_fd(fd, resp.data(), resp.size());
-        }
+    std::string tag;
+    if (!rd.read_token(tag)) { ::close(fd); return; }
+
+    if (tag == "LST") handle_LST(fd, rd);
+    else if (tag == "CRE") handle_CRE(fd, rd);
+    else if (tag == "RID") handle_RID(fd, rd);
+    else if (tag == "CLS") handle_CLS(fd, rd);
+    else if (tag == "SED") handle_SED(fd, rd);
+    else if (tag == "CPS") handle_CPS(fd, rd);
+    else {
+        const std::string resp = "ERR\n";
+        write_exact_fd(fd, resp.data(), resp.size());
     }
+
     ::close(fd);
 }
