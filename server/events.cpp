@@ -17,12 +17,61 @@
 
 #include <filesystem>
 
+// ---- lock inter-processo (fork-safe) ----
+#include <sys/file.h>
+#include <fcntl.h>
+
 namespace fs = std::filesystem;
+
+// ============================================================
+// Helpers: paths
+// ============================================================
 
 // "EVENTS/<eid>"
 std::string event_dir(const std::string &eid) {
     return std::string("EVENTS/") + eid;
 }
+
+// lockfile global para BD (EVENTS/.lock)
+static const char* EVENTS_LOCK_PATH = "EVENTS/.lock";
+
+// ============================================================
+// Helpers: inter-process lock (flock)
+// ============================================================
+
+struct EventsFsLock {
+    int fd = -1;
+
+    explicit EventsFsLock(const char* path = EVENTS_LOCK_PATH) {
+        // garantir que o diretório EVENTS existe antes de abrir lock
+        std::error_code ec;
+        if (!fs::exists("EVENTS", ec)) {
+            fs::create_directory("EVENTS", ec);
+        }
+
+        fd = ::open(path, O_CREAT | O_RDWR, 0666);
+        if (fd < 0) return;
+
+        if (::flock(fd, LOCK_EX) < 0) {
+            ::close(fd);
+            fd = -1;
+            return;
+        }
+    }
+
+    ~EventsFsLock() {
+        if (fd >= 0) {
+            ::flock(fd, LOCK_UN);
+            ::close(fd);
+        }
+    }
+
+    bool ok() const { return fd >= 0; }
+};
+
+// ============================================================
+// Date parsing
+// ============================================================
 
 // Parse "dd-mm-yyyy hh:mm" -> struct tm
 bool parse_event_datetime(const std::string &event_date, struct tm &out_tm) {
@@ -62,6 +111,10 @@ static bool parse_datetime_with_seconds(const std::string &s, struct tm &out_tm)
     return true;
 }
 
+// ============================================================
+// Reserved seats
+// ============================================================
+
 // Lê o total de reservas de "RES <eid>.txt"
 static int read_total_reserved(const std::string &eid) {
     std::string path = event_dir(eid) + "/RES " + eid + ".txt";
@@ -79,7 +132,10 @@ static int read_total_reserved(const std::string &eid) {
     return value;
 }
 
-// Calcula estado do evento
+// ============================================================
+// Compute state
+// ============================================================
+
 static EventState compute_state(const std::string &eid,
                                 const std::string &event_date_str,
                                 int capacity,
@@ -91,8 +147,6 @@ static EventState compute_state(const std::string &eid,
 
     struct tm event_tm{};
     if (!parse_event_datetime(event_date_str, event_tm)) {
-        // Não deveria acontecer porque load_event valida.
-        // Fallback seguro:
         return EventState::Past;
     }
 
@@ -108,8 +162,8 @@ static EventState compute_state(const std::string &eid,
             if (parse_datetime_with_seconds(line, end_tm)) {
                 const time_t end_ts = std::mktime(&end_tm);
 
-                // Heurística do guia: se END != data do evento => fechado pelo dono;
-                // se END == data do evento => evento terminou automaticamente ao ser detetado "Past".
+                // Heurística: se END != data do evento => fechado pelo dono;
+                // se END == data do evento => terminou automaticamente por "Past".
                 if (end_ts != event_ts) {
                     closed_by_user_out = true;
                     return EventState::ClosedByUser;
@@ -117,7 +171,7 @@ static EventState compute_state(const std::string &eid,
                 return EventState::Past;
             }
 
-            // END mal formado -> consideramos fechado pelo dono (não é "fim automático")
+            // END mal formado -> consideramos fechado pelo dono
             closed_by_user_out = true;
             return EventState::ClosedByUser;
         }
@@ -141,10 +195,16 @@ static EventState compute_state(const std::string &eid,
     return EventState::Open;
 }
 
-// Função pública: criar END se o evento está no passado e ainda não existe END.
-// (Chama isto em SED/CLS/RID quando detetas ev.state == Past.)
+// ============================================================
+// Ensure END if Past (now fork-safe)
+// ============================================================
+
 bool ensure_end_if_past(const std::string &eid, const std::string &event_date_str)
 {
+    // LOCK global: evita 2 processos escreverem END ao mesmo tempo
+    EventsFsLock lock;
+    if (!lock.ok()) return false;
+
     const std::string end_path = event_dir(eid) + "/END " + eid + ".txt";
 
     if (file_exists(end_path)) {
@@ -178,7 +238,9 @@ bool ensure_end_if_past(const std::string &eid, const std::string &event_date_st
     return out.good();
 }
 
-// ------------------- API pública -------------------
+// ============================================================
+// Public API: load_event / load_all_events
+// ============================================================
 
 bool load_event(const std::string &eid, EventInfo &out) {
     const std::string base = event_dir(eid);
@@ -207,7 +269,6 @@ bool load_event(const std::string &eid, EventInfo &out) {
     info.capacity   = capacity;
     info.event_date = date_part + " " + time_part;
 
-    // ✅ VALIDAÇÃO IMPORTANTE: se START tiver data/hora inválida, evento é inválido.
     struct tm tmp{};
     if (!parse_event_datetime(info.event_date, tmp)) {
         return false;
@@ -262,7 +323,9 @@ std::vector<EventInfo> load_all_events() {
     return events;
 }
 
-// ------------------- Criação de eventos (CRE) -------------------
+// ============================================================
+// Event creation (CRE) - best concurrency-safe solution
+// ============================================================
 
 static void ensure_events_root()
 {
@@ -272,32 +335,31 @@ static void ensure_events_root()
     }
 }
 
-static bool allocate_new_eid(std::string &eid_out)
+// Cria de forma atómica o diretório do evento e devolve EID + base.
+// Estratégia: tentar mkdir(EVENTS/001), mkdir(EVENTS/002), ...
+// O mkdir é atómico -> não há colisões mesmo com processos simultâneos.
+static bool allocate_and_create_event_dir(std::string &eid_out, std::string &base_out)
 {
     ensure_events_root();
 
-    bool used[1000] = {false};
-
-    DIR *dir = ::opendir("EVENTS");
-    if (dir) {
-        struct dirent *ent;
-        while ((ent = ::readdir(dir)) != nullptr) {
-            if (ent->d_name[0] == '.') continue;
-            if (std::strlen(ent->d_name) != 3) continue;
-
-            const int id = std::atoi(ent->d_name);
-            if (id >= 1 && id <= 999) used[id] = true;
-        }
-        ::closedir(dir);
-    }
-
     for (int i = 1; i <= 999; ++i) {
-        if (!used[i]) {
-            char buf[4];
-            std::snprintf(buf, sizeof(buf), "%03d", i);
-            eid_out.assign(buf);
+        char buf[4];
+        std::snprintf(buf, sizeof(buf), "%03d", i);
+
+        std::string eid(buf);
+        std::string base = event_dir(eid);
+
+        std::error_code ec;
+        bool created = fs::create_directory(base, ec);
+        if (created && !ec) {
+            eid_out = std::move(eid);
+            base_out = std::move(base);
             return true;
         }
+
+        // Se já existe, tenta o próximo.
+        // Para qualquer outro erro, continuamos a tentar (pode ser condição transitória),
+        // mas se quiseres ser mais "estrita", podes return false aqui.
     }
     return false;
 }
@@ -311,18 +373,18 @@ bool es_create_event(const std::string &uid,
                      const std::string &file_data,
                      std::string &eid_out)
 {
+    // LOCK global: com fork, isto é essencial para evitar colisões
+    // em USERS/<uid>/CREATED e noutras escritas relacionadas.
+    EventsFsLock lock;
+    if (!lock.ok()) return false;
+
     std::error_code ec;
 
-    if (!allocate_new_eid(eid_out)) {
+    std::string base;
+    if (!allocate_and_create_event_dir(eid_out, base)) {
         return false;
     }
     const std::string eid = eid_out;
-
-    ensure_events_root();
-    const std::string base = event_dir(eid);
-
-    fs::create_directory(base, ec);
-    if (ec) return false;
 
     // START
     {
